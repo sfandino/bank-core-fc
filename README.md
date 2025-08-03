@@ -72,4 +72,4 @@ docker compose up -d
 6.	Monitor logs
 - Console: output appears during importCsv task run
 - File: tail -f logs/import.log
-- Stored: bank-core-fc/bank-transaction-core/app/logs/import.log
+- [Read also here!](bank-core-fc/bank-transaction-core/app/logs/import.log)
