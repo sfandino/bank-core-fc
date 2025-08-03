@@ -32,8 +32,14 @@ dependencies {
     // HikariCP for connection pooling
     implementation("com.zaxxer:HikariCP:5.0.1")
 
-    // HikariCP for CSV handling
+    // CSV handling
     implementation("org.apache.commons:commons-csv:1.9.0")
+
+    // Kafka client
+    implementation("org.apache.kafka:kafka-clients:3.6.1")
+
+    // Jackson for JSON
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     // logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
@@ -46,6 +52,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
+// This would be implemented to improve the code quality and reliability of the project
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
@@ -61,8 +68,8 @@ java {
 }
 
 application {
-    // mainClass = "com.bankcore.payments.AppKt" -- commented out to avoid errors building
-    mainClass.set("com.bankcore.payments.FlywayMigrateKt")
+    mainClass = "com.bankcore.payments.AppKt" // commented out to avoid errors building
+    //mainClass.set("com.bankcore.payments.FlywayMigrateKt")
 }
 
 tasks.register<JavaExec>("flywayMigrateManual") {
@@ -79,4 +86,11 @@ tasks.register<JavaExec>("importCsv") {
   classpath = sourceSets["main"].runtimeClasspath
   mainClass.set("com.bankcore.payments.JdbcCSVImporter")
   args = listOf("src/main/resources/data/transactions.csv")
+}
+
+tasks.register<JavaExec>("runKafkaConsumer") {
+  group = "ingestion"
+  description = "Start the Kafka JSON consumer"
+  classpath = sourceSets["main"].runtimeClasspath
+  mainClass.set("com.bankcore.payments.KafkaConsumerAppKt")
 }

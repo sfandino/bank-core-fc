@@ -21,6 +21,23 @@
     </encoder>
   </appender>
 
+  <!-- Appender for JdbcService logs -->
+  <appender name="JDBC_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/jdbc-service.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/jdbc-service.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Logger for JdbcService class -->
+  <logger name="com.bankcore.payments.JdbcService" level="INFO" additivity="false">
+    <appender-ref ref="JDBC_FILE" />
+  </logger>
+
   <!-- Root logger: log INFO+ to both -->
   <root level="INFO">
     <appender-ref ref="STDOUT" />

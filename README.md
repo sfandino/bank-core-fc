@@ -30,7 +30,7 @@ A simple Kotlin application to manage payment transactions, supporting database 
 
 Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious in the logs and also True for flag_suspicious.
 
-## 🚀 Quick Start
+# 🚀 Quick Start
 
 ### Prerequisites
 
@@ -40,11 +40,19 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 
 ### Steps
 
-1.	Clone the repo
+- The first 4 steps will create the services that the system supports, the following sections will tackle 1 by 1 the tasks given:
+
+1.	Clone the repo, clean possible old outputs and compile code
 
 ```
 git clone [<repository-url>](https://github.com/sfandino/bank-core-fc.git) && cd bank-transaction-core
 ```
+
+- Here we clean and compile code - we create artifacts here for later execution
+```
+./gradlew :app:clean :app:build
+```
+
 
 3.	Start PostgreSQL + PgAdmin
 
@@ -60,6 +68,11 @@ docker compose up -d
 
 - Creates users, currencies, transactions tables and also inserts User and currency data
 
+
+## CSV Importer
+
+The system supports importing transaction data via CSV file - (it writes the data in PostgreSQL)
+
 5.	Import transactions from CSV
 
 ```
@@ -73,3 +86,50 @@ docker compose up -d
 - Console: output appears during importCsv task run
 - File: tail -f logs/import.log
 - [Read also here!](bank-core-fc/bank-transaction-core/app/logs/import.log)
+
+## Queue Data Ingestion
+The system supports streaming via Kafka topics - the sink is the PostgreSQL data base.
+
+7. Creating a Kafka Topic and Publish a Test message
+
+- Creating the topic
+
+```
+docker exec -it bankcore-kafka \
+  kafka-topics --create \
+    --topic transactions \
+    --bootstrap-server localhost:9092 \
+    --replication-factor 1 \
+    --partitions 1
+```
+- The consumer needs to be started to listen to any incoming message
+
+```
+./gradlew :app:runKafkaConsumer
+```
+- Publish a message / In real life we would have a data stream connected sending this kind of messages
+
+```
+docker exec -i bankcore-kafka kafka-console-producer \
+  --topic transactions \
+  --bootstrap-server localhost:9092 <<EOF
+{"transaction_id":"g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6","sender_id":"8b2f3c21-2d3e-5f4a-9b8c-2d3e4f5a6b7c","receiver_id":"7a1e2b10-1c2d-4e3f-8a9b-1c2d3e4f5a6b","amount":50000.00,"currency":"USD","timestamp":"2025-08-03T18:00:00Z","status":"completed"}
+EOF
+```
+- This row should be inserted into PostgreSQL, and also should have triggered the warning for suspicious transaction.
+
+
+
+## Trouble Shooting
+
+- Always makesure that your code compiles after building the app
+
+```
+./gradlew :app:build
+```
+
+- You can also makesure that the ingestion tasks are being listed with this command
+
+```
+./gradlew :app:tasks --group ingestion
+```

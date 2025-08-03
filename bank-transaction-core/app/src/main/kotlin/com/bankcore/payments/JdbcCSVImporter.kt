@@ -53,10 +53,11 @@ object JdbcCSVImporter {
             val amount = BigDecimal(rec["amount"])
             val currency = rec["currency"]
             val status = rec["status"]
+            val flag_suspicious = amount > suspiciousThreshold
             val occurred = Timestamp.from(Instant.parse(rec["timestamp"]))
-            val created = Timestamp.from(Instant.now()) 
+            val created = Timestamp.from(Instant.now())
             
-            if (amount > suspiciousThreshold) {
+            if (flag_suspicious) {
                 logger.warn { "Suspicious transaction $id over threshold: $amount" }
             }
 
@@ -71,7 +72,7 @@ object JdbcCSVImporter {
             stmt.setString(4, currency)
             stmt.setBigDecimal(5, amount)
             stmt.setString(6, status)
-            stmt.setBoolean(7, amount > suspiciousThreshold)
+            stmt.setBoolean(7, flag_suspicious)
             stmt.setTimestamp(8, occurred)
             stmt.setTimestamp(9, created)
 
