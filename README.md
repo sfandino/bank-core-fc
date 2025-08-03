@@ -10,12 +10,12 @@ A simple Kotlin application to manage payment transactions, supporting database 
 
 ### 📦 Database Schema
 	• The schema or DDL of the data base is created under the Flyway repository folder:	
-    Please navigate to: bank-core-fc/bank-transaction-core/app/src/main/resources/db/migration/V1__init.sql
+    [See the schema definition here](bank-core-fc/bank-transaction-core/app/src/main/resources/db/migration/V1__init.sql)
     
     • Flyway tracks applied migrations in flyway_schema_history, so for the V1 and V2 we split definition of tables and insert statements
 
 ### 📄 CSV File Format
-	•	Location: app/src/main/resources/data/transactions.csv
+	•	[Navigate to CSV file!] (app/src/main/resources/data/transactions.csv) 
 	•	Columns (header row required):
 	1.	transaction_id (string 8-4-4-4-12)
 	2.	sender_id      (string 8-4-4-4-12)
@@ -37,7 +37,7 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 ### Steps
 	1.	Clone the repo
 
-	```git clone [<repository-url>](https://github.com/sfandino/bank-core-fc.git) && cd bank-transaction-core```
+	```git clone https://github.com/sfandino/bank-core-fc.git && cd bank-transaction-core```
 
 
 	2.	Start PostgreSQL + PgAdmin
@@ -66,4 +66,4 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 	5.	Monitor logs
 	•	Console: output appears during importCsv task run
 	•	File: tail -f logs/import.log
-	•	Stored: bank-core-fc/bank-transaction-core/app/logs/import.log
+	•	[You can find it here too!](bank-core-fc/bank-transaction-core/app/logs/import.log)
