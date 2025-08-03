@@ -8,6 +8,7 @@
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    //kotlin("jvm") version "1.9.10"
     application
 }
 
@@ -18,6 +19,7 @@ repositories {
 
 dependencies {
     // Kotlin Standard Library
+    //implementation(kotlin("stdlib", "1.9.10"))
     implementation(kotlin("stdlib"))
 
     // PostgreSQL JDBC Driver
@@ -26,6 +28,16 @@ dependencies {
     // Flyway for DB migrations
     implementation("org.flywaydb:flyway-core:11.10.5")
     implementation("org.flywaydb:flyway-database-postgresql:11.10.5")
+
+    // HikariCP for connection pooling
+    implementation("com.zaxxer:HikariCP:5.0.1")
+
+    // HikariCP for CSV handling
+    implementation("org.apache.commons:commons-csv:1.9.0")
+
+    // logging
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation("ch.qos.logback:logback-classic:1.4.11")
 
     // Guava -- TODO CF delete if not needed after compiling
     implementation(libs.guava)
@@ -49,7 +61,7 @@ java {
 }
 
 application {
-    // mainClass = "com.bankcore.payments.AppKt"
+    // mainClass = "com.bankcore.payments.AppKt" -- commented out to avoid errors building
     mainClass.set("com.bankcore.payments.FlywayMigrateKt")
 }
 
@@ -59,4 +71,12 @@ tasks.register<JavaExec>("flywayMigrateManual") {
 
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.bankcore.payments.FlywayMigrateKt")
+}
+
+tasks.register<JavaExec>("importCsv") {
+  group = "ingestion"
+  description = "Import CSV via JDBC"
+  classpath = sourceSets["main"].runtimeClasspath
+  mainClass.set("com.bankcore.payments.JdbcCSVImporter")
+  args = listOf("src/main/resources/data/transactions.csv")
 }

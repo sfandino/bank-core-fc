@@ -1,11 +1,13 @@
 -- V1__init.sql - Initial DDL for Users, Transactions and Curerncies Tables
 CREATE TABLE users (
-    id          UUID        PRIMARY KEY,
+    id          VARCHAR(36) PRIMARY KEY,
     name        TEXT        NOT NULL,
     email       TEXT        UNIQUE NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Creating this currencies table to showcase just more relationship. 
+-- But this table should be ingested daily with conversion rates etc... so it makes sense to have it.
 CREATE TABLE currencies (
     code        CHAR(3)     PRIMARY KEY,       
     name        TEXT        NOT NULL,          
@@ -14,12 +16,13 @@ CREATE TABLE currencies (
 );
 
 CREATE TABLE transactions (
-    id              UUID          PRIMARY KEY,
-    sender_id       UUID          NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    receiver_id     UUID          NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    id              VARCHAR(36)   PRIMARY KEY,
+    sender_id       VARCHAR(36)   NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    receiver_id     VARCHAR(36)   NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     currency_code   CHAR(3)       NOT NULL REFERENCES currencies(code) ON UPDATE CASCADE ON DELETE RESTRICT,
     amount          NUMERIC(12,2) NOT NULL CHECK (amount >= 0),
     status          VARCHAR(10)   NOT NULL CHECK (status IN ('pending','completed','failed')),
+    flag_suspicious BOOLEAN       NOT NULL DEFAULT FALSE, -- to mark suspicious transactions
     occurred_at     TIMESTAMPTZ   NOT NULL, -- when the payment event happened
     created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW(), 
     UNIQUE (sender_id, receiver_id, occurred_at, amount) -- to help catch dupes
