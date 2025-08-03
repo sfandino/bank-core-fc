@@ -9,7 +9,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     application
-    id("org.flywaydb.flyway") version "10.10.0" 
 }
 
 repositories {
@@ -25,20 +24,14 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.2")
 
     // Flyway for DB migrations
-    implementation("org.flywaydb:flyway-core:10.10.0")
+    implementation("org.flywaydb:flyway-core:11.10.5")
+    implementation("org.flywaydb:flyway-database-postgresql:11.10.5")
 
     // Guava -- TODO CF delete if not needed after compiling
     implementation(libs.guava)
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-}
-
-flyway {
-    url = "jdbc:postgresql://localhost:5432/bankcore"
-    user = "postgres"
-    password = "postgres"
-    locations = arrayOf("classpath:db/migration")
 }
 
 testing {
@@ -56,5 +49,14 @@ java {
 }
 
 application {
-    mainClass = "com.bankcore.payments.AppKt"
+    // mainClass = "com.bankcore.payments.AppKt"
+    mainClass.set("com.bankcore.payments.FlywayMigrateKt")
+}
+
+tasks.register<JavaExec>("flywayMigrateManual") {
+    group = "flyway"
+    description = "Run Flyway migration manually from Kotlin main class"
+
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.bankcore.payments.FlywayMigrateKt")
 }

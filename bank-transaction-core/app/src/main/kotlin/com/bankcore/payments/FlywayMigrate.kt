@@ -13,5 +13,5 @@ fun main() {
         .load()
 
     val result = flyway.migrate()
-    println("Got it finnaly applied - migration: ${result.migrationsExecuted}")
+    println("Migrations applied: ${result.migrationsExecuted}")
 }
