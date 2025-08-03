@@ -9,10 +9,12 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     application
+    id("org.flywaydb.flyway") version "10.10.0" 
 }
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
@@ -30,6 +32,13 @@ dependencies {
 
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+}
+
+flyway {
+    url = "jdbc:postgresql://localhost:5432/bankcore"
+    user = "postgres"
+    password = "postgres"
+    locations = arrayOf("classpath:db/migration")
 }
 
 testing {
