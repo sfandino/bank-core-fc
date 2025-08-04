@@ -72,6 +72,7 @@ application {
     //mainClass.set("com.bankcore.payments.FlywayMigrateKt")
 }
 
+// Task to run the application and perform migrations with Flyway
 tasks.register<JavaExec>("flywayMigrateManual") {
     group = "flyway"
     description = "Run Flyway migration manually from Kotlin main class"
@@ -80,6 +81,7 @@ tasks.register<JavaExec>("flywayMigrateManual") {
     mainClass.set("com.bankcore.payments.FlywayMigrateKt")
 }
 
+// Task to run the CSV importer
 tasks.register<JavaExec>("importCsv") {
   group = "ingestion"
   description = "Import CSV via JDBC"
@@ -88,9 +90,18 @@ tasks.register<JavaExec>("importCsv") {
   args = listOf("src/main/resources/data/transactions.csv")
 }
 
+// Task to run the Kafka consumer
 tasks.register<JavaExec>("runKafkaConsumer") {
   group = "ingestion"
   description = "Start the Kafka JSON consumer"
   classpath = sourceSets["main"].runtimeClasspath
   mainClass.set("com.bankcore.payments.KafkaConsumerAppKt")
+}
+
+// Task to run the reporting application
+tasks.register<JavaExec>("report") {
+  group = "reporting"
+  description = "Run reporting queries"
+  classpath = sourceSets["main"].runtimeClasspath
+  mainClass.set("com.bankcore.reporting.ReportingAppKt")
 }

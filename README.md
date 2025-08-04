@@ -8,6 +8,7 @@ A simple Kotlin application to manage payment transactions, supporting database 
 - Database: PostgreSQL (via Docker)
 - Migration: Flyway (via Kotlin runner)
 - Ingestion: CSV import using JDBC + HikariCP
+- Data Stream: Kafka (via Docker)
 
 ### 📦 Database Schema
 
@@ -18,7 +19,7 @@ A simple Kotlin application to manage payment transactions, supporting database 
 
 ### 📄 CSV File Format
 
-•	[Find it here!](app/src/main/resources/data/transactions.csv)
+•	[Find an example here!](app/src/main/resources/data/transactions.csv)
 •	Columns (header row required):
 	1.	transaction_id (string 8-4-4-4-12)
 	2.	sender_id      (string 8-4-4-4-12)
@@ -28,7 +29,7 @@ A simple Kotlin application to manage payment transactions, supporting database 
 	6.	timestamp      (ISO-8601 with Z)
 	7.	status         (pending|completed|failed)
 
-Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious in the logs and also True for flag_suspicious.
+Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious in the logs and also set True for flag_suspicious.
 
 # 🚀 Quick Start
 
@@ -88,11 +89,11 @@ The system supports importing transaction data via CSV file - (it writes the dat
 - [Read also here!](bank-core-fc/bank-transaction-core/app/logs/import.log)
 
 ## Queue Data Ingestion
-The system supports streaming via Kafka topics - the sink is the PostgreSQL data base.
+The system listens to a data stream through a Kafka topic *transactions* - the sink is the PostgreSQL data base.
 
-7. Creating a Kafka Topic and Publish a Test message
+7. Creating a Kafka listener and Publish a Test message
 
-- Creating the topic
+- Creating the listener - I recommend you do this on a extra tab in your terminal
 
 ```
 docker exec -it bankcore-kafka \
@@ -116,8 +117,29 @@ docker exec -i bankcore-kafka kafka-console-producer \
 {"transaction_id":"g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6","sender_id":"8b2f3c21-2d3e-5f4a-9b8c-2d3e4f5a6b7c","receiver_id":"7a1e2b10-1c2d-4e3f-8a9b-1c2d3e4f5a6b","amount":50000.00,"currency":"USD","timestamp":"2025-08-03T18:00:00Z","status":"completed"}
 EOF
 ```
-- This row should be inserted into PostgreSQL, and also should have triggered the warning for suspicious transaction.
+- This row should be inserted into PostgreSQL, and also should have triggered the warning for suspicious transaction
+- You could have a look at the tab where the consumer was launched, it should show some activity
+- You could also login into the data base and check the new ingested row
 
+## Reporting
+The system has an extra app which support reporting you could report on 2 different levels:
+
+1) You can report all the payments (sent and receive) of a concrete customer within a time frame
+   Please make sure that the user and the transactions exists on the database (step 4. is required here)
+
+The format of the request is: "payments user_id start_date_transactions end_date_transactions" (Dates are strictly given as a timestamp)
+
+```
+./gradlew :app:report --args="payments 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2025-04-01T00:00:00Z 2025-08-04T00:00:00Z"
+```
+
+2) You can report daily totals for a user (sent and receive) of a concrete customer within a time frame
+
+The format of the request is: "daily-totals user_id start_date_transactions end_date_transactions"
+
+```
+./gradlew :app:report --args="daily-totals 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2025-04-01 2025-08-03"
+```
 
 
 ## Trouble Shooting
@@ -125,11 +147,35 @@ EOF
 - Always makesure that your code compiles after building the app
 
 ```
-./gradlew :app:build
+./gradlew :app:build 
+```
+or even better
+
+```
+./gradlew :app:clean :app:build
 ```
 
-- You can also makesure that the ingestion tasks are being listed with this command
+- You can also makesure that the ingestion tasks are being listed with this command (or reporting task as well if you change the command)
 
 ```
 ./gradlew :app:tasks --group ingestion
 ```
+
+- This project has a consistent volume for Postgres, which means your data will be consistent even if you do a compose down
+but if you want to start again from scratch, you can wipe out the volume with the following command:
+
+```
+docker compose down -v
+```
+
+- Perhaps one of the services in the docker is down? Check them like this:
+
+```
+docker ps -a 
+```
+You should have the following services:
+
+	bankcore-kafka (Kafka Consumer)
+	pgadmin (GUI for Postgres)
+	bankcore-postgres (The DB)
+	bankcore-zk (ZooKeeper)
