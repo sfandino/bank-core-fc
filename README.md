@@ -31,6 +31,11 @@ Kotlin mockup application to manage payment transactions, supporting database mi
 
 Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious in the logs and also set True for flag_suspicious.
 
+# How does the system looks like
+
+![Diagram of the System](Documentation/img/diagram.png)
+
+
 # 🚀 Quick Start
 
 ### Prerequisites
