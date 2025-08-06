@@ -89,8 +89,12 @@ make ingest-json
 ```
 cat app/logs/jdbc-service.log  
 ```
+-- You should be able to see this tin the logs:
 
--- Please see the suspicious transaction, you could also check the Postgres Database and see the new inserted row
+>2025-08-03 21:21:47 INFO  com.bankcore.payments.JdbcService - Stream inserted event 08e63665-3709-4bdc-9e95-49d7fc0633fd from JSON g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6
+
+-- I got this and is worth seeing - also please see the suspicious transaction, you could also check the Postgres Database and see the new inserted row
+
 >2025-08-03 21:21:47 INFO  com.bankcore.payments.JdbcService - Stream inserted event 08e63665-3709-4bdc-9e95-49d7fc0633fd from JSON g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6
 
 >2025-08-03 21:42:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event 8f7e8308-e7f0-4a39-a394-871e8e38136c from JSON a4rf65e1-01a2-d4e3-y9p9-b1c2d3e4f4t6
@@ -98,6 +102,8 @@ cat app/logs/jdbc-service.log
 >2025-08-03 21:47:37 WARN  com.bankcore.payments.JdbcService - Suspicious transaction via stream e23e0704-8afb-4eec-a623-af9e12f7339d over threshold: 32099.00
 
 >2025-08-03 21:47:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event e23e0704-8afb-4eec-a623-af9e12f7339d from JSON f7d355e1-04a3-e4f3-y7p7-b62d3o4fft5
+
+-- At this moment this is odd right? I got 4 messages, but we just sent 1 - Kafka consumer is configured to start covering from the beginning of the topics, so we don't miss any data (anonymous volumes persist after compose down command and messages are kept, so they were received when the consumer started again)- This may not happen if you are starting this for the first time since there are no Volumes mounted for Kafka nor you had any previous activity in your environment as when this documentation was created.
 
 5) Do some quick Reporting
 - You can call different custom-made reports see in the Makefile for more examples
@@ -125,6 +131,8 @@ Your report will be old-school printed and should be shown like this:
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-08, sentTotal=0, receivedTotal=0)
 
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-09, sentTotal=1650.00, receivedTotal=1500.00)
+
+6) There is no quick way to test the scheduler, so you can jump to the Slow Start step 10
 
 ### Slow Start - The manual way of getting to know the system...
 
