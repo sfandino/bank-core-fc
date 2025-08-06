@@ -54,8 +54,11 @@ make up
 2) Please check that the components are all up from a new terminal- you should see these:
 
 >bankcore-kafka (Kafka Consumer)
+
 >pgadmin (GUI for Postgres)
+
 >bankcore-postgres (The DB)
+
 >bankcore-zk (ZooKeeper)
 
 3) Test the CSV Importer
@@ -67,8 +70,11 @@ make ingest-csv
 - You should see something similar like this:
 
 >INFO  c.bankcore.payments.JdbcCSVImporter - Starting import from src/main/resources/data/transactions.csv
+
 >WARN  c.bankcore.payments.JdbcCSVImporter - Suspicious transaction b1d4e5f4-34f5-a7b6-c9d8-e4f5a6b7c8d9 over threshold: 10500.00
+
 >INFO  c.bankcore.payments.JdbcCSVImporter - Imported 44 records.
+
 >INFO  c.bankcore.payments.JdbcCSVImporter - Import complete.
 
 4) Publish a Message to the Transaction's topic
@@ -86,8 +92,11 @@ cat app/logs/jdbc-service.log
 
 -- Please see the suspicious transaction, you could also check the Postgres Database and see the new inserted row
 >2025-08-03 21:21:47 INFO  com.bankcore.payments.JdbcService - Stream inserted event 08e63665-3709-4bdc-9e95-49d7fc0633fd from JSON g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6
+
 >2025-08-03 21:42:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event 8f7e8308-e7f0-4a39-a394-871e8e38136c from JSON a4rf65e1-01a2-d4e3-y9p9-b1c2d3e4f4t6
+
 >2025-08-03 21:47:37 WARN  com.bankcore.payments.JdbcService - Suspicious transaction via stream e23e0704-8afb-4eec-a623-af9e12f7339d over threshold: 32099.00
+
 >2025-08-03 21:47:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event e23e0704-8afb-4eec-a623-af9e12f7339d from JSON f7d355e1-04a3-e4f3-y7p7-b62d3o4fft5
 
 5) Do some quick Reporting
@@ -100,13 +109,21 @@ make report ARGS="daily-totals 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2022-04-01 2
 Your report will be old-school printed and should be shown like this:
 
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-01, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-02, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-03, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-04, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-05, sentTotal=0, receivedTotal=400.00)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-06, sentTotal=100.00, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-07, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-08, sentTotal=0, receivedTotal=0)
+
 >DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-09, sentTotal=1650.00, receivedTotal=1500.00)
 
 ### Slow Start - The manual way of getting to know the system...
