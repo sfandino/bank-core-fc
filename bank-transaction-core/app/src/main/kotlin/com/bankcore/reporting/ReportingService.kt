@@ -27,6 +27,13 @@ data class DailyTotal(
   val receivedTotal: BigDecimal
 )
 
+data class AllUsersBalance(
+  val userId: String,
+  val balanceTotal: BigDecimal,
+  val reportDate: LocalDate
+)
+
+
 object ReportingService {
   // 1) Fetch all payments by user (either sent or received) between two users.
   fun getPaymentsForUser(
@@ -72,14 +79,14 @@ object ReportingService {
     to: LocalDate
   ): List<DailyTotal> = ds.connection.use { conn ->
     val sql = """
-      SELECT
+    SELECT
         date(occurred_at AT TIME ZONE 'UTC') AS day,
         SUM(CASE WHEN sender_id = ? THEN amount ELSE 0 END) AS sent_total,
         SUM(CASE WHEN receiver_id = ? THEN amount ELSE 0 END) AS recv_total
-      FROM transactions
-      WHERE occurred_at >= ? AND occurred_at < ?
-      GROUP BY day
-      ORDER BY day
+    FROM transactions
+    WHERE occurred_at >= ? AND occurred_at < ?
+    GROUP BY day
+    ORDER BY day
     """.trimIndent()
     conn.prepareStatement(sql).use { stmt ->
       stmt.setString(1, userId)
@@ -98,5 +105,38 @@ object ReportingService {
       }
       results
     }
+  }
+/** 3) Compute daily total balances for all users for a concrete date - this makes no much sense but is for sake of this example */
+  fun getUserBalances(
+    ds: DataSource,
+    date: LocalDate
+    ): List<AllUsersBalance> = ds.connection.use { conn ->
+    val sql = """
+        SELECT u.id AS user_id,
+            COALESCE(SUM(CASE WHEN t.receiver_id = u.id THEN t.amount ELSE 0 END), 0)
+            - COALESCE(SUM(CASE WHEN t.sender_id   = u.id THEN t.amount ELSE 0 END), 0)
+            AS balance,
+            ? AS report_date
+        FROM users u
+        LEFT JOIN transactions t
+        ON (t.sender_id = u.id OR t.receiver_id = u.id)
+        AND DATE(t.occurred_at AT TIME ZONE 'UTC') = ?
+        GROUP BY u.id, DATE(t.occurred_at AT TIME ZONE 'UTC')
+        ORDER BY u.id
+    """.trimIndent()
+    conn.prepareStatement(sql).use { stmt ->
+        stmt.setTimestamp(1, Timestamp.from(date.atStartOfDay().toInstant(ZoneOffset.UTC)))
+        stmt.setTimestamp(2, Timestamp.from(date.atStartOfDay().toInstant(ZoneOffset.UTC)))
+        val rs = stmt.executeQuery()
+        val results = mutableListOf<AllUsersBalance>()
+        while (rs.next()) {
+            results += AllUsersBalance(
+                userId = rs.getString("user_id"),
+                balanceTotal = rs.getBigDecimal("balance"),
+                reportDate = rs.getDate("report_date").toLocalDate()
+            )
+        }        
+        results
+    } 
   }
 }

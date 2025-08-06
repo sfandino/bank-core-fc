@@ -14,6 +14,7 @@ fun main(args: Array<String>) {
     println("Usage:")
     println("  report payments <user-id> <from-iso> <to-iso>")
     println("  report daily-totals <user-id> <from-date> <to-date>")
+    println("  report all-users-balance <report-date>")
     return
   }
 
@@ -31,6 +32,11 @@ fun main(args: Array<String>) {
       val from   = LocalDate.parse(args[2])
       val to     = LocalDate.parse(args[3])
       val list = ReportingService.getDailyTotals(ds, userId, from, to)
+      list.forEach { println(it) }
+    }
+    "all-users-balance" -> {
+      val date = LocalDate.parse(args[1])
+      val list = ReportingService.getUserBalances(ds, date)
       list.forEach { println(it) }
     }
     else -> {

@@ -1,6 +1,6 @@
 # Bank Transaction Core
 
-A simple Kotlin application to manage payment transactions, supporting database migrations and CSV ingestion.
+Kotlin mockup application to manage payment transactions, supporting database migrations, CSV file ingestion and reporting.
 
 ### 🌐 Overview
 
@@ -122,9 +122,9 @@ EOF
 - You could also login into the data base and check the new ingested row
 
 ## Reporting
-The system has an extra app which support reporting you could report on 2 different levels:
+The system has an extra task which support reporting we could report on 2 different levels:
 
-1) You can report all the payments (sent and receive) of a concrete customer within a time frame
+9) 1. You can report all the payments (sent and receive) of a concrete customer within a time frame
    Please make sure that the user and the transactions exists on the database (step 4. is required here)
 
 The format of the request is: "payments user_id start_date_transactions end_date_transactions" (Dates are strictly given as a timestamp)
@@ -133,7 +133,7 @@ The format of the request is: "payments user_id start_date_transactions end_date
 ./gradlew :app:report --args="payments 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2025-04-01T00:00:00Z 2025-08-04T00:00:00Z"
 ```
 
-2) You can report daily totals for a user (sent and receive) of a concrete customer within a time frame
+10) 2. You can report daily totals for a user (sent and receive) of a concrete customer within a time frame
 
 The format of the request is: "daily-totals user_id start_date_transactions end_date_transactions"
 
@@ -141,6 +141,24 @@ The format of the request is: "daily-totals user_id start_date_transactions end_
 ./gradlew :app:report --args="daily-totals 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2025-04-01 2025-08-03"
 ```
 
+## Scheduling
+The idea is to create a recurrent execution of a task - we will schedule the creation of a report that makes sense to deliver on a daily basis at 5:00 UTC:
+
+10) For the sake of having a schedule, we have a daily report which return the total balance for each user from the day before
+
+- You can test the report manually with the command below
+```
+./gradlew :app:report --args="all-users-balance 2025-05-03"
+```
+- Now, while having a report to be created under a schedule, we have the scheduler implemented with Quartz
+- To test the scheduler properly, I recommend you to change the cron time to a time in the future today, so you dont need to wait till next day until 5 am ^^
+- Make your changes and start the scheduler with the following command - I recommend running this command in a new tab, since will be running actively
+
+```
+./gradlew :app:runQuartzScheduler
+```
+-- When the scheduler runs the job, this would print the Report on the command line, but I think something that makes sense is to export it as PDF and either store it on a path or send it via Email, 
+the possibilities here are infinite, so depending of the business case, we could implement it. 
 
 ## Trouble Shooting
 
@@ -173,7 +191,7 @@ docker compose down -v
 ```
 docker ps -a 
 ```
-You should have the following services:
+You should have the following items listed:
 
 	bankcore-kafka (Kafka Consumer)
 	pgadmin (GUI for Postgres)
