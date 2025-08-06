@@ -36,7 +36,7 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 ![Diagram of the System](Documentation/img/diagram_background.png)
 
 
-# 🚀 Quick Start
+# 🚀 Let's Start
 
 ### Prerequisites
 
@@ -44,7 +44,72 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 - Docker & Docker Compose
 - Git
 
-### Steps
+### Quick Start - The quick way of getting started
+- This is the fastest way to go, please navigate in your terminal to the root folder of the project and cd into this folder: *bank-transaction-core*
+
+1) We will rapidly use the Makefile and execute the following command, this will start all the components needed (keep the terminal open and work in a new one after this).
+```
+make up
+```
+2) Please check that the components are all up from a new terminal- you should see these:
+
+>bankcore-kafka (Kafka Consumer)
+>pgadmin (GUI for Postgres)
+>bankcore-postgres (The DB)
+>bankcore-zk (ZooKeeper)
+
+3) Test the CSV Importer
+- The repository already has a path and a file fix coded we can easily ingest it like this:
+
+```
+make ingest-csv
+```
+- You should see something similar like this:
+
+>INFO  c.bankcore.payments.JdbcCSVImporter - Starting import from src/main/resources/data/transactions.csv
+>WARN  c.bankcore.payments.JdbcCSVImporter - Suspicious transaction b1d4e5f4-34f5-a7b6-c9d8-e4f5a6b7c8d9 over threshold: 10500.00
+>INFO  c.bankcore.payments.JdbcCSVImporter - Imported 44 records.
+>INFO  c.bankcore.payments.JdbcCSVImporter - Import complete.
+
+4) Publish a Message to the Transaction's topic
+- There is a pre-written JSON object-message that will be sent and processed by the Kafka consumer
+
+```
+make ingest-json
+```
+
+- If you navigate to the logs folder, you should be able to see the activity of the consumer and find something like this:
+
+```
+cat app/logs/jdbc-service.log  
+```
+
+-- Please see the suspicious transaction, you could also check the Postgres Database and see the new inserted row
+>2025-08-03 21:21:47 INFO  com.bankcore.payments.JdbcService - Stream inserted event 08e63665-3709-4bdc-9e95-49d7fc0633fd from JSON g7a1e5b1-01a2-d4e3-f8a9-b1c2d3e4f4t6
+>2025-08-03 21:42:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event 8f7e8308-e7f0-4a39-a394-871e8e38136c from JSON a4rf65e1-01a2-d4e3-y9p9-b1c2d3e4f4t6
+>2025-08-03 21:47:37 WARN  com.bankcore.payments.JdbcService - Suspicious transaction via stream e23e0704-8afb-4eec-a623-af9e12f7339d over threshold: 32099.00
+>2025-08-03 21:47:37 INFO  com.bankcore.payments.JdbcService - Stream inserted event e23e0704-8afb-4eec-a623-af9e12f7339d from JSON f7d355e1-04a3-e4f3-y7p7-b62d3o4fft5
+
+5) Do some quick Reporting
+- You can call different custom-made reports see in the Makefile for more examples
+
+```
+make report ARGS="daily-totals 8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f 2022-04-01 2025-08-03"
+```
+
+Your report will be old-school printed and should be shown like this:
+
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-01, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-02, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-03, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-04, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-05, sentTotal=0, receivedTotal=400.00)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-06, sentTotal=100.00, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-07, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-08, sentTotal=0, receivedTotal=0)
+>DailyTotal(userId=8e2f3a10-2a3b-5c4d-7e6f-2a3b4c5d6e7f, date=2025-05-09, sentTotal=1650.00, receivedTotal=1500.00)
+
+### Slow Start - The manual way of getting to know the system...
 
 - The first 4 steps will create the services that the system supports, the following sections will tackle 1 by 1 the tasks given:
 
@@ -113,7 +178,7 @@ docker exec -it bankcore-kafka \
 ```
 ./gradlew :app:runKafkaConsumer
 ```
-- Publish a message / In real life we would have a data stream connected sending this kind of messages
+- Publish a message / In real life we would have a data stream connected sending this kind of messages - the JSON supported shown below in the example
 
 ```
 docker exec -i bankcore-kafka kafka-console-producer \
