@@ -33,7 +33,7 @@ Rows with invalid UUIDs are skipped; amounts >10,000 are flagged as suspicious i
 
 # How does the system looks like
 
-![Diagram of the System](Documentation/img/diagram.png)
+![Diagram of the System](Documentation/img/diagram_background.png)
 
 
 # 🚀 Quick Start
