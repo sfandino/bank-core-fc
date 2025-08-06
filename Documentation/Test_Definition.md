@@ -1,4 +1,4 @@
-## First Circle: Data Engineer Test
+## Data Engineer Test
 Create a simple application (system) in a language of your choice (preferably kotlin/java but not a must) that covers the topics bellow.
 
 Readme file should contain short explanation how to start the app, preferably with short summary of it.
